@@ -412,6 +412,10 @@ public:
                 "[allocator.requirements] states that rebinding an allocator to the same type should result in the "
                 "original allocator");
 
+  // 默认构造函数函数体是空的 这个默认构造函数做的事情是
+  // 1 按照成员变量的顺序 3指针在声明的地方就有默认初始化器 全部都是nullptr
+  // 2 执行构造函数体
+  // 对于一个vector而言有个3指针的初值就足够了 真正的内存分配延迟到以首次放元素的地方 懒加载
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI vector()
       _NOEXCEPT_(is_nothrow_default_constructible<allocator_type>::value) {}
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI explicit vector(const allocator_type& __a)
