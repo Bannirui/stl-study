@@ -595,6 +595,7 @@ public:
     return static_cast<size_type>(this->__end_ - this->__begin_);
   }
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI size_type capacity() const _NOEXCEPT {
+    // 现在vector分配的大小(可以容纳的元素个数)
     return static_cast<size_type>(__end_cap() - this->__begin_);
   }
   _LIBCPP_NODISCARD_AFTER_CXX17 _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI bool empty() const _NOEXCEPT {
@@ -723,8 +724,15 @@ public:
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI bool __invariants() const;
 
 private:
+  // 3指针标识内存区域的分配使用情况 这3个指针是真实地址 不是相对分配内存的相对偏移
+  // begin 已经使用了的放了元素的首地址
+  // end 已经使用区域的边界 待插入元素的地方
+  // cap 申请到的整块内存的边界
+  // [begin, end)已经构造的元素 [end, cap)已经分配的内存还没有构造元素
+  // 这个地方指针类型为什么不直接使用模板类型而是封装了自定义类型pointer 如果不需要对其他allocator支持就直接模板类型就可以 现在有了其他的allocator 他们可能不是裸指针 为了指针移动步进(指针+1是指针移动1个元素大小的内存空间)一致才封装了pointer这个类型
   pointer __begin_ = nullptr;
   pointer __end_   = nullptr;
+  // 2个信息 分配的内存空间[begin, cap) 对使用的内存分配器的标识
   __compressed_pair<pointer, allocator_type> __end_cap_ =
       __compressed_pair<pointer, allocator_type>(nullptr, __default_init_tag());
 
@@ -904,6 +912,7 @@ private:
   }
 
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI allocator_type& __alloc() _NOEXCEPT {
+    // 拿到vector使用的内存分配器
     return this->__end_cap_.second();
   }
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI const allocator_type& __alloc() const _NOEXCEPT {
@@ -987,9 +996,12 @@ _LIBCPP_CONSTEXPR_SINCE_CXX20 void
 vector<_Tp, _Allocator>::__swap_out_circular_buffer(__split_buffer<value_type, allocator_type&>& __v) {
   __annotate_delete();
   using _RevIter = std::reverse_iterator<pointer>;
+  // 从后往前把旧数组里面的元素搬到新数组 临时数组构造的时候拿到的begin就已经定位在中间了 从后往前搬完后刚好拿到正确的首元素新的地址
   __v.__begin_   = std::__uninitialized_allocator_move_if_noexcept(
                      __alloc(), _RevIter(__end_), _RevIter(__begin_), _RevIter(__v.__begin_))
                      .base();
+  // 前面已经插入了新添加的元素->end更新了 现在又把老数组搬完了->begin更新了 现在这个时机更新vector的3指针成新的值
+  // 这个地方用的是swap 很巧妙 变相把旧数组的管理权转移给了v 相当于free旧数组这件事情以后由v负责了
   std::swap(this->__begin_, __v.__begin_);
   std::swap(this->__end_, __v.__end_);
   std::swap(this->__end_cap(), __v.__end_cap());
@@ -1031,6 +1043,7 @@ vector<_Tp, _Allocator>::max_size() const _NOEXCEPT {
   return std::min<size_type>(__alloc_traits::max_size(this->__alloc()), numeric_limits<difference_type>::max());
 }
 
+// 期待vector的容量是new_size 看看扩容到多大合适
 //  Precondition:  __new_size > capacity()
 template <class _Tp, class _Allocator>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 inline _LIBCPP_HIDE_FROM_ABI typename vector<_Tp, _Allocator>::size_type
@@ -1039,6 +1052,7 @@ vector<_Tp, _Allocator>::__recommend(size_type __new_size) const {
   if (__new_size > __ms)
     this->__throw_length_error();
   const size_type __cap = capacity();
+  // 当前容量已经是上限的一半了 再2倍扩容就超限了 要return ASAP
   if (__cap >= __ms / 2)
     return __ms;
   return std::max<size_type>(2 * __cap, __new_size);
@@ -1443,15 +1457,19 @@ _LIBCPP_CONSTEXPR_SINCE_CXX20 void vector<_Tp, _Allocator>::shrink_to_fit() _NOE
   }
 }
 
+// 分配的内存耗尽 需要扩容
 template <class _Tp, class _Allocator>
 template <class _Up>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 typename vector<_Tp, _Allocator>::pointer
 vector<_Tp, _Allocator>::__push_back_slow_path(_Up&& __x) {
+  // 需要扩容必然看看用的哪种内存分配器
   allocator_type& __a = this->__alloc();
+  // 创建
   __split_buffer<value_type, allocator_type&> __v(__recommend(size() + 1), size(), __a);
   // __v.push_back(std::forward<_Up>(__x));
   __alloc_traits::construct(__a, std::__to_address(__v.__end_), std::forward<_Up>(__x));
   __v.__end_++;
+  // 把老数组的元素搬到新数组 现在vector管理着新的3指针 v这个临时对象管理着老的3指针 一旦这个函数执行结束 离开了作用域v会被自动析构 自然而然也就释放了旧数组
   __swap_out_circular_buffer(__v);
   return this->__end_;
 }
@@ -1459,13 +1477,20 @@ vector<_Tp, _Allocator>::__push_back_slow_path(_Up&& __x) {
 template <class _Tp, class _Allocator>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 inline _LIBCPP_HIDE_FROM_ABI void
 vector<_Tp, _Allocator>::push_back(const_reference __x) {
+  // 已经使用区域的边界 待写元素的地址
   pointer __end = this->__end_;
+  // 看看申请到的空间还有没有可用内存了
   if (__end < this->__end_cap()) {
     __construct_one_at_end(__x);
+    // 新元素加到了vector里面了 没有立即更新指针而是把更新end指针的时机放在了分支外面 两个原因
+    // 1 让fast-path和slow-path复用end更新的代码
+    // 2 保证自己这个方法统一提交更新操作的语义
     ++__end;
   } else {
+    // 已经分配的内存不够 触发扩容
     __end = __push_back_slow_path(__x);
   }
+  // 统一提交状态更新end指针
   this->__end_ = __end;
 }
 
