@@ -1,0 +1,5 @@
+/Users/dingrui/MyDev/code/cpp/stl-study/build/CMakeFiles/edit_cache.dir
+/Users/dingrui/MyDev/code/cpp/stl-study/build/CMakeFiles/rebuild_cache.dir
+/Users/dingrui/MyDev/code/cpp/stl-study/build/test/CMakeFiles/vector_test.dir
+/Users/dingrui/MyDev/code/cpp/stl-study/build/test/CMakeFiles/edit_cache.dir
+/Users/dingrui/MyDev/code/cpp/stl-study/build/test/CMakeFiles/rebuild_cache.dir
