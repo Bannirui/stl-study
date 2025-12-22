@@ -1,6 +1,0 @@
-/Users/dingrui/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=make -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -G "Unix Makefiles" -S /Users/dingrui/MyDev/code/cpp/stl-study -B /Users/dingrui/MyDev/code/cpp/stl-study/build
--- System: Darwin
--- Using libc++ (macOS)
--- Configuring done (0.0s)
--- Generating done (0.0s)
--- Build files have been written to: /Users/dingrui/MyDev/code/cpp/stl-study/build
