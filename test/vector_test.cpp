@@ -75,8 +75,12 @@ int main() {
     print("z = ", z);
 
     std::vector<int> iVector = {1,2,3};
+    int* ptr = iVector.data();
     for (int i=0, sz=iVector.size(); i<sz; ++i) {
         std::cout << "脚标索引" << i << "=" << iVector[i] << "\n";
         std::cout << "at索引" << i << "=" << iVector.at(i) << "\n";
+        std::cout << "pointer索引" << i << "=" << *(ptr + i) << "\n";
+        std::cout << "front元素" << i << "=" << iVector.front() << "\n";
+        std::cout << "end元素" << i << "=" << iVector.back() << "\n";
     }
 }
