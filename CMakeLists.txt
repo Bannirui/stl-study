@@ -5,19 +5,18 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# debug flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -Wall -Wextra")
+
 message(STATUS "System: ${CMAKE_SYSTEM_NAME}")
 
 # 根据平台选择STL实现
 if(APPLE)
     message(STATUS "Using libc++ (macOS)")
-    include_directories(
-            ${CMAKE_SOURCE_DIR}/stl/libcxx
-    )
+    include_directories(${CMAKE_SOURCE_DIR}/stl/libcxx)
 elseif(UNIX)
     message(STATUS "Using libstdc++ (Linux)")
-    include_directories(
-            ${CMAKE_SOURCE_DIR}/stl/libstdcxx
-    )
+    include_directories(${CMAKE_SOURCE_DIR}/stl/libstdcxx)
 else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
