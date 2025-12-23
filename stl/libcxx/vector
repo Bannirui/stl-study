@@ -595,6 +595,7 @@ public:
   }
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI const_reverse_iterator crend() const _NOEXCEPT { return rend(); }
 
+  // vector有多少个元素
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI size_type size() const _NOEXCEPT {
     return static_cast<size_type>(this->__end_ - this->__begin_);
   }
@@ -711,6 +712,7 @@ public:
 
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI void clear() _NOEXCEPT {
     size_type __old_size = size();
+    // 清空vector
     __clear();
     __annotate_shrink(__old_size);
   }
@@ -929,11 +931,15 @@ private:
     return this->__end_cap_.first();
   }
 
+  // 清空的语义是整个vector从后往前逐个析构掉元素
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI void __clear() _NOEXCEPT {
     __base_destruct_at_end(this->__begin_);
   }
 
+  // [a...b...c)假设给进来的是b 那么会把[b...c)元素都析构掉
+  // 给进来首元素地址就会把整个vector的所有元素都析构掉 清空
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI void __base_destruct_at_end(pointer __new_last) _NOEXCEPT {
+    // vector中尾元素指针 从后往前逐个析构掉元素
     pointer __soon_to_be_end = this->__end_;
     while (__new_last != __soon_to_be_end)
       __alloc_traits::destroy(__alloc(), std::__to_address(--__soon_to_be_end));
@@ -1220,6 +1226,7 @@ vector<_Tp, _Allocator>::vector(const vector& __x, const __type_identity_t<alloc
   __init_with_size(__x.__begin_, __x.__end_, __x.size());
 }
 
+// 移动构造方法
 template <class _Tp, class _Allocator>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 inline _LIBCPP_HIDE_FROM_ABI vector<_Tp, _Allocator>::vector(vector&& __x)
 #if _LIBCPP_STD_VER >= 17
@@ -1307,11 +1314,17 @@ _LIBCPP_CONSTEXPR_SINCE_CXX20 void vector<_Tp, _Allocator>::__move_assign(vector
   __c.__begin_ = __c.__end_ = __c.__end_cap() = nullptr;
 }
 
+// 拷贝赋值运算 函数签名的入参只有一个vector类型的引用
+// 当用std::initializer_list时会先构造一个临时的vector 然后用vector作为参数调用这个拷贝赋值
 template <class _Tp, class _Allocator>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 inline _LIBCPP_HIDE_FROM_ABI vector<_Tp, _Allocator>&
 vector<_Tp, _Allocator>::operator=(const vector& __x) {
+  // 避免没有意义的自己拷贝给自己
+  // 取址不什么不用&操作符 因为担心&运算被重载
   if (this != std::addressof(__x)) {
+    // 为是在干什么 因为在vector的3指针中的cap指针里面还附加了内存分配器的标识 可能要拷贝的vector的分配器跟自己不一样 得把分配器信息也拷贝过来 将来申请内存时要用
     __copy_assign_alloc(__x);
+    // 把自己清空 再把x里面的元素添加进来
     assign(__x.__begin_, __x.__end_);
   }
   return *this;
@@ -1323,14 +1336,18 @@ template <class _InputIterator,
                             is_constructible<_Tp, typename iterator_traits<_InputIterator>::reference>::value,
                         int> >
 _LIBCPP_CONSTEXPR_SINCE_CXX20 void vector<_Tp, _Allocator>::assign(_InputIterator __first, _InputIterator __last) {
+  // 先把自己的vector清空 然后再将别的vector的元素从头到尾添加到自己
   __assign_with_sentinel(__first, __last);
 }
 
+// 拷贝赋值会执行到这 先清空当前的vector 然后逐个添加元素 期间可能会触发扩容
 template <class _Tp, class _Allocator>
 template <class _Iterator, class _Sentinel>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI void
 vector<_Tp, _Allocator>::__assign_with_sentinel(_Iterator __first, _Sentinel __last) {
+  // 先清空
   clear();
+  // 再逐个添加新元素
   for (; __first != __last; ++__first)
     emplace_back(*__first);
 }

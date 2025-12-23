@@ -45,6 +45,10 @@ int main() {
         std::cout << "v3的内容 " << i << " " << v2.at(i) << '\n';
     }
 
+    std::vector<int> xx(5);
+    // 自己拷贝给自己 会return asap
+    xx = xx;
+
     std::vector<int> x{1, 2, 3}, y, z;
     // 这是C++里一个非常特殊 优先级极高的规则 只要出现auto x = { ... } 推导结果必然是std::initializer_list<T>
     const auto w = {4, 5, 6, 7};
@@ -55,6 +59,7 @@ int main() {
     print("z = ", z);
 
     std::cout << "Copy assignment copies data from x to y:\n";
+    // 初始化列表拷贝赋值 先用initializer_list构造临时的vector 然后用vector的拷贝赋值方法
     y = x;
     print("x = ", x);
     print("y = ", y);
