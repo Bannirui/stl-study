@@ -1440,8 +1440,10 @@ vector<_Tp, _Allocator>::operator[](size_type __n) const _NOEXCEPT {
 
 template <class _Tp, class _Allocator>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 typename vector<_Tp, _Allocator>::reference vector<_Tp, _Allocator>::at(size_type __n) {
+  // 越界检查
   if (__n >= size())
     this->__throw_out_of_range();
+  // 本质=*(begin+n)
   return this->__begin_[__n];
 }
 

@@ -77,5 +77,6 @@ int main() {
     std::vector<int> iVector = {1,2,3};
     for (int i=0, sz=iVector.size(); i<sz; ++i) {
         std::cout << "脚标索引" << i << "=" << iVector[i] << "\n";
+        std::cout << "at索引" << i << "=" << iVector.at(i) << "\n";
     }
 }
