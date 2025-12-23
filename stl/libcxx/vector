@@ -1422,10 +1422,12 @@ vector<_Tp, _Allocator>::end() const _NOEXCEPT {
   return __make_iter(this->__end_);
 }
 
+// 重载脚标索引
 template <class _Tp, class _Allocator>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 inline _LIBCPP_HIDE_FROM_ABI typename vector<_Tp, _Allocator>::reference
 vector<_Tp, _Allocator>::operator[](size_type __n) _NOEXCEPT {
   _LIBCPP_ASSERT_VALID_ELEMENT_ACCESS(__n < size(), "vector[] index out of bounds");
+  // 本质=*(begin+n)
   return this->__begin_[__n];
 }
 
