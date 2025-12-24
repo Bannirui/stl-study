@@ -11,5 +11,7 @@ stl源码拷贝 linux平台可以把整个源码拷贝过来 但是mac平台不�
   - [X] 析构函数
   - [X] =
   - [X] assign
+  - [X] get_allocator
+  - 
   - [X] push_back
   - [X] 

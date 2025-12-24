@@ -14,7 +14,20 @@ void print(const auto comment, const auto &container) {
     std::cout << "}\n";
 }
 
+template <typename T>
+void vector_info(const std::vector<T>& v) {
+    std::cout << "vector info: 元素地址=" << v.data() << " size=" << v.size() << " cap=" << v.capacity() << "\n";
+}
+
 int main() {
+    {
+        std::vector<int> v;
+        v.assign(1,2);
+        vector_info(v);
+        auto x = v.get_allocator();
+        // x.deallocate(v.data(), 2);
+    }
+
     {
         std::vector<int> x(10);
         std::cout << "size=" << x.size() << " cap=" << x.capacity() << "\n";

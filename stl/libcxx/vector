@@ -575,6 +575,7 @@ public:
 #endif
 
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI allocator_type get_allocator() const _NOEXCEPT {
+    // 内存分配器 存放在cap指针里面
     return this->__alloc();
   }
 
