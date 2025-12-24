@@ -21,6 +21,12 @@ void vector_info(const std::vector<T> &v) {
 
 int main() {
     {
+        std::vector<int> v(5);
+        auto num = v.insert(v.begin()+1, 100);
+        vector_info(v);
+        std::cout << *num << "\n";
+    }
+    {
         std::vector<int> v = {1, 2, 3, 4, 5};
         vector_info(v);
         v.clear();

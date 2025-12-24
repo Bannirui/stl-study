@@ -1040,10 +1040,13 @@ vector<_Tp, _Allocator>::__swap_out_circular_buffer(__split_buffer<value_type, a
   __annotate_delete();
   pointer __r    = __v.__begin_;
   using _RevIter = std::reverse_iterator<pointer>;
+  // vector元素搬到split buffer 以p为分水岭 原来的[begin...p)倒着搬到临时buffer 此时buffer的begin定在了中间位置 从begin往前
   __v.__begin_   = std::__uninitialized_allocator_move_if_noexcept(
                      __alloc(), _RevIter(__p), _RevIter(__begin_), _RevIter(__v.__begin_))
                      .base();
+  // 原来的[p...end)搬到buffer 从buffer有end往后
   __v.__end_ = std::__uninitialized_allocator_move_if_noexcept(__alloc(), __p, __end_, __v.__end_);
+  // 数据搬完了 vector跟buffer交换彼此掌管的内存指针 转移了内存所有权
   std::swap(this->__begin_, __v.__begin_);
   std::swap(this->__end_, __v.__end_);
   std::swap(this->__end_cap(), __v.__end_cap());
@@ -1672,21 +1675,31 @@ vector<_Tp, _Allocator>::insert(const_iterator __position, const_reference __x) 
   return __make_iter(__p);
 }
 
+// 在pos之前插入元素
 template <class _Tp, class _Allocator>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 typename vector<_Tp, _Allocator>::iterator
 vector<_Tp, _Allocator>::insert(const_iterator __position, value_type&& __x) {
+  // 定位
   pointer __p = this->__begin_ + (__position - begin());
   if (this->__end_ < this->__end_cap()) {
+    // 内存够的情况 [begin...pos...end) 就把[pos...end)的元素往后挪 空出来pos位置 然后再将元素复制到pos上
     if (__p == this->__end_) {
+      // 边界情况不需要挪 直接追加到最后
       __construct_one_at_end(std::move(__x));
     } else {
+      // [pox...end)往后挪1个位置
       __move_range(__p, this->__end_, __p + 1);
+      // 元素放到pos位置
       *__p = std::move(__x);
     }
   } else {
+    // 当前size等于cap 现在要insert元素 肯定是容不下的 所以要触发扩容
     allocator_type& __a = this->__alloc();
+    // 用内存分配器构造个临时的split buffer 构造好后begin指针停在中间了
     __split_buffer<value_type, allocator_type&> __v(__recommend(size() + 1), __p - this->__begin_, __a);
+    // 先把元素放到pos位置
     __v.push_back(std::move(__x));
+    // pos之前的 pos之后的元素都会从vector搬到buffer
     __p = __swap_out_circular_buffer(__v, __p);
   }
   return __make_iter(__p);
