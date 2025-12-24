@@ -612,6 +612,7 @@ public:
     // 现在vector分配的大小(可以容纳的元素个数)
     return static_cast<size_type>(__end_cap() - this->__begin_);
   }
+  // vector是不是空的 空的语义是容器里面没元素 但是可能是已经有了内存 也可能是还没有分配内存
   _LIBCPP_NODISCARD_AFTER_CXX17 _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI bool empty() const _NOEXCEPT {
     return this->__begin_ == this->__end_;
   }
