@@ -610,7 +610,7 @@ public:
     return static_cast<size_type>(this->__end_ - this->__begin_);
   }
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI size_type capacity() const _NOEXCEPT {
-    // 现在vector分配的大小(可以容纳的元素个数)
+    // vector的容量 也就是从内存分配器上拿到的内存空间可以放多少个元素
     return static_cast<size_type>(__end_cap() - this->__begin_);
   }
   // vector是不是空的 空的语义是容器里面没元素 但是可能是已经有了内存 也可能是还没有分配内存
