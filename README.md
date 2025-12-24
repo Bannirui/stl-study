@@ -23,5 +23,6 @@ stl源码拷贝 linux平台可以把整个源码拷贝过来 但是mac平台不�
   - [X] max_size
   - [X] reserve
   - [X] capacity
+  - [X] clear
   - [X] push_back
   - [X] 
