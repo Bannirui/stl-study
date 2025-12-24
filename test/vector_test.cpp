@@ -21,6 +21,10 @@ void vector_info(const std::vector<T>& v) {
 
 int main() {
     {
+        std::vector<int> v(1);
+        std::cout << "data=" << v.data() << "\n";
+    }
+    {
         std::vector<int> v;
         v.push_back(2);
         std::cout << "vector back=" << v.back() << "\n";

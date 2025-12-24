@@ -644,7 +644,7 @@ public:
   }
 
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI value_type* data() _NOEXCEPT {
-    // 首元素指针
+    // 元素区域的地址 也就是首元素的地址
     return std::__to_address(this->__begin_);
   }
 
