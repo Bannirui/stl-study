@@ -21,6 +21,11 @@ void vector_info(const std::vector<T>& v) {
 
 int main() {
     {
+        std::vector<int> v(3);
+        int num = v.front();
+        std::cout << "vector front: " << num << "\n";
+    }
+    {
         std::vector<int> v;
         v.assign(1,2);
         vector_info(v);
