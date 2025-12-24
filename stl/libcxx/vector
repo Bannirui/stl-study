@@ -1489,13 +1489,18 @@ vector<_Tp, _Allocator>::at(size_type __n) const {
   return this->__begin_[__n];
 }
 
+// 只改变容量 保证容量满足n个元素 不改变size
 template <class _Tp, class _Allocator>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 void vector<_Tp, _Allocator>::reserve(size_type __n) {
   if (__n > capacity()) {
     if (__n > max_size())
       this->__throw_length_error();
+    // 内存分配器是哪个
     allocator_type& __a = this->__alloc();
+    // 构建临时的vector对象 容量是n个元素 构建好后临时的vector的begin就已经停留在了中间位置
+    // 它的3指针指向的是新内存
     __split_buffer<value_type, allocator_type&> __v(__n, size(), __a);
+    // 把vector里面的元素搬到临时vector里面 执行完老内存空间所有权转移到了v上 新内存空间所有权转移到了vector 等当前这个函数执行完 离开作用域v就会被释放 连带着vector之前的老内存空间被释放
     __swap_out_circular_buffer(__v);
   }
 }
