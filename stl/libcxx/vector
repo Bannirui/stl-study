@@ -719,6 +719,7 @@ public:
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI iterator erase(const_iterator __position);
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI iterator erase(const_iterator __first, const_iterator __last);
 
+  // 只析构元素 不释放内存
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI void clear() _NOEXCEPT {
     size_type __old_size = size();
     // 清空vector
@@ -1046,12 +1047,18 @@ vector<_Tp, _Allocator>::__swap_out_circular_buffer(__split_buffer<value_type, a
   return __r;
 }
 
+// 释放内存
 template <class _Tp, class _Allocator>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 void vector<_Tp, _Allocator>::__vdeallocate() _NOEXCEPT {
+  // 看看当前vector有没有内存 已经没有内存的vector不要重复释放
   if (this->__begin_ != nullptr) {
+    // vector有内存
+    // 析构掉元素 不释放内存
     clear();
     __annotate_delete();
+    // 释放原始内存
     __alloc_traits::deallocate(this->__alloc(), this->__begin_, capacity());
+    // 防御式编程 让vector状态滚到没分配状态
     this->__begin_ = this->__end_ = this->__end_cap() = nullptr;
   }
 }
@@ -1390,18 +1397,30 @@ vector<_Tp, _Allocator>::__assign_with_size(_ForwardIterator __first, _Sentinel 
   }
 }
 
+// 赋值n个u
 template <class _Tp, class _Allocator>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 void vector<_Tp, _Allocator>::assign(size_type __n, const_reference __u) {
   if (__n <= capacity()) {
+    // 现在vector的内存容量是够用的
+    // 已经放了s个元素
     size_type __s = size();
+    // 从begin开始连续赋值一片 多退少补的原则
     std::fill_n(this->__begin_, std::min(__n, __s), __u);
-    if (__n > __s)
+    if (__n > __s) {
+      // 还不够 顺着end指针继续补上元素
       __construct_at_end(__n - __s, __u);
-    else
+    }
+    else {
+      // 放多了 顺着end指针往前析构到指定地点
       this->__destruct_at_end(this->__begin_ + __n);
+    }
   } else {
+    // 当前vector容量不够 因为是指定了要在vector中放n个元素 所以步骤比扩容简单 不需要考复制元素
+    // 现在内存不够 直接释放掉 申请新的内存来用就行
     __vdeallocate();
+    // 申请内存来放n个元素
     __vallocate(__recommend(static_cast<size_type>(__n)));
+    // 现在vector已经是空的了 内存已经准备好 在上面构造n个u元素就行
     __construct_at_end(__n, __u);
   }
 }

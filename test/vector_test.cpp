@@ -16,6 +16,14 @@ void print(const auto comment, const auto &container) {
 
 int main() {
     {
+        std::vector<int> x(10);
+        std::cout << "size=" << x.size() << " cap=" << x.capacity() << "\n";
+        x.assign(2, 9);
+        print("赋值了2个9", x);
+        std::cout << "size=" << x.size() << " cap=" << x.capacity() << "\n";
+    }
+
+    {
         std::vector<int> x{1, 2, 3}, y;
         y = x;
         print("x = ", x);
