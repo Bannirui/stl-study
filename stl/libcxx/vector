@@ -606,6 +606,7 @@ public:
 
   // vector有多少个元素
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI size_type size() const _NOEXCEPT {
+    // 指针相减 中间有多少个元素
     return static_cast<size_type>(this->__end_ - this->__begin_);
   }
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI size_type capacity() const _NOEXCEPT {

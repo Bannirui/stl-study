@@ -21,6 +21,10 @@ void vector_info(const std::vector<T> &v) {
 
 int main() {
     {
+        std::vector<int> v = {1, 2};
+        std::cout << "size=" << v.size() << "\n";
+    }
+    {
         std::vector<int> v;
         std::cout << "empty=" << v.empty() << std::endl;
     }
