@@ -21,6 +21,12 @@ void vector_info(const std::vector<T> &v) {
 
 int main() {
     {
+        std::vector<int> v = {1, 2, 3, 4, 5};
+        std::cout << "v1 max_size=" << v.max_size() << std::endl;
+        std::vector<long long> v2 = {1, 2, 3, 4, 5};
+        std::cout << "v2 max_size=" << v2.max_size() << std::endl;
+    }
+    {
         std::vector<int> v = {1, 2};
         std::cout << "size=" << v.size() << "\n";
     }
