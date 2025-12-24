@@ -487,10 +487,13 @@ public:
 private:
   class __destroy_vector {
   public:
+    // 持有对要析构的vector的引用 并不会对vector的内容进行复制
     _LIBCPP_CONSTEXPR _LIBCPP_HIDE_FROM_ABI __destroy_vector(vector& __vec) : __vec_(__vec) {}
 
+    // 重载()操作符 vector析构的真正逻辑
     _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI void operator()() {
       if (__vec_.__begin_ != nullptr) {
+        // 析构掉vector的所有元素
         __vec_.__clear();
         __vec_.__annotate_delete();
         __alloc_traits::deallocate(__vec_.__alloc(), __vec_.__begin_, __vec_.capacity());
@@ -502,6 +505,8 @@ private:
   };
 
 public:
+  // vector的析构函数体内并没有直接做资源释放的工作 因为是模板 在函数体内容过多会导致编译期将来模板展开后代码爆炸
+  // 构造一个临时对象然后调用临时对象的()操作符
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI ~vector() { __destroy_vector (*this)(); }
 
   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI vector(const vector& __x);

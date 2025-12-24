@@ -1,15 +1,13 @@
 ## REQUIRE
 
-### stl路径
-- mac mini `/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include/c++/v1`
-- archlinux `/usr/include/c++/15.2.1/bits/stl_vector.h`
+stl源码拷贝 linux平台可以把整个源码拷贝过来 但是mac平台不行 需要哪个拷贝哪个
 
-### 拷贝源码
-#### vector 
-```sh
-cp -R /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include/c++/v1/vector stl/libcxx 
-```
+- mac mini `cp -R /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include/c++/v1/* ./stl/libcxx/`
+- archlinux `cp -R /usr/include/c++/15.2.1/* ./stl/libstdcxx/`
 
 ## NOTE
 - vector
+  - [X] 构造函数 
+  - [X] 析构函数
   - [X] push_back
+  - [X] 

@@ -83,4 +83,22 @@ int main() {
         std::cout << "front元素" << i << "=" << iVector.front() << "\n";
         std::cout << "end元素" << i << "=" << iVector.back() << "\n";
     }
+    std::cout << "迭代器w" << "\n";
+    for (auto it = iVector.begin(); it != iVector.end(); ++it) {
+        *it = 999;
+    }
+    for (auto it = iVector.begin(); it != iVector.end(); ++it) {
+        std::cout << "迭代器 r " << *it << "\n";
+    }
+    for (auto it = iVector.cbegin(); it != iVector.cend(); ++it) {
+        std::cout << "const迭代器 r " << *it << "\n";
+    }
+    std::for_each(iVector.cbegin(), iVector.cend(), [](int num) {
+        std::cout << "for_each迭代" << num << "\n";
+    });
+
+    // 析构函数
+    {
+        std::vector<int> v1;
+    }
 }

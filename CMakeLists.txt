@@ -13,12 +13,15 @@ message(STATUS "System: ${CMAKE_SYSTEM_NAME}")
 # 根据平台选择STL实现
 if(APPLE)
     message(STATUS "Using libc++ (macOS)")
-    include_directories(${CMAKE_SOURCE_DIR}/stl/libcxx)
-elseif(UNIX)
+    set(STL_PATH ${CMAKE_SOURCE_DIR}/stl/libcxx)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     message(STATUS "Using libstdc++ (Linux)")
-    include_directories(${CMAKE_SOURCE_DIR}/stl/libstdcxx)
+    set(STL_PATH ${CMAKE_SOURCE_DIR}/stl/libstdcxx)
 else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
+
+# 全局include路径
+include_directories(${STL_PATH})
 
 add_subdirectory(test)
