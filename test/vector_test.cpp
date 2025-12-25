@@ -19,10 +19,29 @@ void vector_info(const std::vector<T> &v) {
     std::cout << "vector info: 元素地址=" << v.data() << " size=" << v.size() << " cap=" << v.capacity() << "\n";
 }
 
+class my_Temp {
+public:
+    int a;
+    int b;
+
+    my_Temp(int a, int b) : a(a), b(b) {}
+};
+
+std::ostream &operator<<(std::ostream &os, const my_Temp &v) {
+    os << "{a=" << v.a << ", b=" << v.b << "}";
+    return os;
+}
+
 int main() {
     {
+        std::vector<my_Temp> v;
+        print("emplace before: ", v);
+        v.emplace(v.begin(), 1, 2);
+        print("emplace after: ", v);
+    }
+    {
         std::vector<int> v(5);
-        auto num = v.insert(v.begin()+1, 100);
+        auto num = v.insert(v.begin() + 1, 100);
         vector_info(v);
         std::cout << *num << "\n";
     }

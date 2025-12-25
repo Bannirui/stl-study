@@ -1705,24 +1705,38 @@ vector<_Tp, _Allocator>::insert(const_iterator __position, value_type&& __x) {
   return __make_iter(__p);
 }
 
+// emplace跟insert的区别
+// insert插入的是已经构建好的对象
+// emplace仅仅是对象需要的参数 构建对象行为由emplace负责
 template <class _Tp, class _Allocator>
 template <class... _Args>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 typename vector<_Tp, _Allocator>::iterator
 vector<_Tp, _Allocator>::emplace(const_iterator __position, _Args&&... __args) {
+  // 定位
   pointer __p = this->__begin_ + (__position - begin());
   if (this->__end_ < this->__end_cap()) {
+    // 现在vector容量够再塞1个元素进来
     if (__p == this->__end_) {
+      // 边界 不用挪元素 直接追加到最后 在end指针位置上构建个元素
       __construct_one_at_end(std::forward<_Args>(__args)...);
     } else {
+      // 连续空间被一分为二 [begin...pos) [pos...end) 把后半截元素往后挪一个位置空出来pos
       __temp_value<value_type, _Allocator> __tmp(this->__alloc(), std::forward<_Args>(__args)...);
       __move_range(__p, this->__end_, __p + 1);
+      // 把新添加的元素放到pos位置
       *__p = std::move(__tmp.get());
     }
   } else {
+    // 再添加个元素进来就不够了 触发扩容
     allocator_type& __a = this->__alloc();
+    // 构建临时buffer begin指针停在中间位置
     __split_buffer<value_type, allocator_type&> __v(__recommend(size() + 1), __p - this->__begin_, __a);
+    // 拿着参数构建个对象 在end指针上添加上
     __v.emplace_back(std::forward<_Args>(__args)...);
+    // 现在buffer的中间位置已经放上了元素 再把vector的[begin...pos)搬到buffer前半截 vector的[pos...end)搬到buffer后半截
+    // 数据搬完后vector跟buffer转移各自管理的内存的所有权
     __p = __swap_out_circular_buffer(__v, __p);
+    // 这行之行完buffer离开作用域 buffer被释放 连带着buffer现在管理着的旧内存被释放
   }
   return __make_iter(__p);
 }
