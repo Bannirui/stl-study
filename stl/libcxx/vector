@@ -1565,9 +1565,11 @@ template <class _Tp, class _Allocator>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 inline _LIBCPP_HIDE_FROM_ABI void vector<_Tp, _Allocator>::push_back(value_type&& __x) {
   pointer __end = this->__end_;
   if (__end < this->__end_cap()) {
+    // 空间够用 在end指针位置移动复制个新元素放上去
     __construct_one_at_end(std::move(__x));
     ++__end;
   } else {
+    // 已经满了 不够再多放一个元素了 触发扩容机制
     __end = __push_back_slow_path(std::move(__x));
   }
   this->__end_ = __end;
