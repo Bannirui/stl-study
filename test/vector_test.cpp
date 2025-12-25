@@ -34,6 +34,16 @@ std::ostream &operator<<(std::ostream &os, const my_Temp &v) {
 
 int main() {
     {
+        std::vector<int> x = {1, 2, 3, 4, 5};
+        print("erase before:", x);
+        x.erase(x.begin());
+        print("erase after:", x);
+        x.erase(x.begin(), x.begin() + 1);
+        print("erase after2:", x);
+        x.erase(x.begin(), x.begin() + 2);
+        print("erase after3:", x);
+    }
+    {
         std::vector<my_Temp> v;
         print("emplace before: ", v);
         v.emplace(v.begin(), 1, 2);

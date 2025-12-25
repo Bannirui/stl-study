@@ -1621,16 +1621,20 @@ vector<_Tp, _Allocator>::erase(const_iterator __position) {
       __position != end(), "vector::erase(iterator) called with a non-dereferenceable iterator");
   difference_type __ps = __position - cbegin();
   pointer __p          = this->__begin_ + __ps;
+  // move算法把[pos+1...end)整体每个元素往前挪一个位置 相当于把pos位置给覆盖了 最后空出来了end-1那个位置 所以要把end-1那个位置的元素给析构掉
   this->__destruct_at_end(std::move(__p + 1, this->__end_, __p));
   return __make_iter(__p);
 }
 
+// 删除[first...last)之间的元素
 template <class _Tp, class _Allocator>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 typename vector<_Tp, _Allocator>::iterator
 vector<_Tp, _Allocator>::erase(const_iterator __first, const_iterator __last) {
   _LIBCPP_ASSERT_VALID_INPUT_RANGE(__first <= __last, "vector::erase(first, last) called with invalid range");
+  // 定位
   pointer __p = this->__begin_ + (__first - begin());
   if (__first != __last) {
+    // [first...last)这个洞是要删掉的位置 把后面的元素往前挪 最后析构最后的last-first个元素
     this->__destruct_at_end(std::move(__p + (__last - __first), this->__end_, __p));
   }
   return __make_iter(__p);
