@@ -19,20 +19,37 @@ void vector_info(const std::vector<T> &v) {
     std::cout << "vector info: 元素地址=" << v.data() << " size=" << v.size() << " cap=" << v.capacity() << "\n";
 }
 
-class my_Temp {
+class MyTemp {
 public:
     int a;
     int b;
+    std::string c;
 
-    my_Temp(int a, int b) : a(a), b(b) {}
+    MyTemp(int a, int b, std::string s) : a(a), b(b), c(std::move(s)) {}
+
+    MyTemp(MyTemp &&other) : a(other.a), b(other.b), c(std::move(other.c)) {}
+
+    MyTemp &operator=(const MyTemp &other) = default;
 };
 
-std::ostream &operator<<(std::ostream &os, const my_Temp &v) {
+std::ostream &operator<<(std::ostream &os, const MyTemp &v) {
     os << "{a=" << v.a << ", b=" << v.b << "}";
     return os;
 }
 
 int main() {
+    {
+        std::vector<MyTemp> v;
+        print("emplace_back before: ", v);
+        v.emplace_back(MyTemp(1, 2, "hello"));
+        print("emplace_back after: ", v);
+    }
+    {
+        std::vector<MyTemp> v;
+        print("emplace before: ", v);
+        v.emplace(v.begin(), MyTemp(1, 2, "hello"));
+        print("emplace after: ", v);
+    }
     {
         std::vector<int> x = {1, 2, 3, 4, 5};
         print("erase before:", x);
@@ -42,12 +59,6 @@ int main() {
         print("erase after2:", x);
         x.erase(x.begin(), x.begin() + 2);
         print("erase after3:", x);
-    }
-    {
-        std::vector<my_Temp> v;
-        print("emplace before: ", v);
-        v.emplace(v.begin(), 1, 2);
-        print("emplace after: ", v);
     }
     {
         std::vector<int> v(5);

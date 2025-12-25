@@ -1580,10 +1580,13 @@ template <class... _Args>
 _LIBCPP_CONSTEXPR_SINCE_CXX20 typename vector<_Tp, _Allocator>::pointer
 vector<_Tp, _Allocator>::__emplace_back_slow_path(_Args&&... __args) {
   allocator_type& __a = this->__alloc();
+  // 构建临时buffer begin指针停在中间 里面还是空的没有元素
   __split_buffer<value_type, allocator_type&> __v(__recommend(size() + 1), size(), __a);
   //    __v.emplace_back(std::forward<_Args>(__args)...);
+  // 构建元素对象放到buffer的end指针位置
   __alloc_traits::construct(__a, std::__to_address(__v.__end_), std::forward<_Args>(__args)...);
   __v.__end_++;
+  // 从后往前把vector元素都搬到buffer里面
   __swap_out_circular_buffer(__v);
   return this->__end_;
 }
@@ -1599,9 +1602,11 @@ _LIBCPP_CONSTEXPR_SINCE_CXX20 inline
     vector<_Tp, _Allocator>::emplace_back(_Args&&... __args) {
   pointer __end = this->__end_;
   if (__end < this->__end_cap()) {
+    // 容量还够 原地构造一个对象放到end指针位置
     __construct_one_at_end(std::forward<_Args>(__args)...);
     ++__end;
   } else {
+    // 空间不够 扩容
     __end = __emplace_back_slow_path(std::forward<_Args>(__args)...);
   }
   this->__end_ = __end;
