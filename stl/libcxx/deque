@@ -1532,9 +1532,12 @@ void deque<_Tp, _Allocator>::shrink_to_fit() _NOEXCEPT {
   __map_.shrink_to_fit();
 }
 
+// 运算符访问追求极致的性能 没有边界校验
 template <class _Tp, class _Allocator>
 inline typename deque<_Tp, _Allocator>::reference deque<_Tp, _Allocator>::operator[](size_type __i) _NOEXCEPT {
+  // 线性逻辑地址
   size_type __p = __start_ + __i;
+  // 逻辑位置->定位到block->block的偏移
   return *(*(__map_.begin() + __p / __block_size) + __p % __block_size);
 }
 
