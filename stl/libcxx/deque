@@ -499,7 +499,9 @@ private:
   };
 
   struct __deque_range {
+    // 当前block的起始iterator
     iterator __pos_;
+    // 逻辑end
     const iterator __end_;
 
     _LIBCPP_HIDE_FROM_ABI __deque_range(iterator __pos, iterator __e) _NOEXCEPT : __pos_(__pos), __end_(__e) {}
@@ -509,10 +511,16 @@ private:
     _LIBCPP_HIDE_FROM_ABI __deque_range begin() const { return *this; }
 
     _LIBCPP_HIDE_FROM_ABI __deque_range end() const { return __deque_range(__end_, __end_); }
+
+    // 解引用得到的是block内的区间
     _LIBCPP_HIDE_FROM_ABI __deque_block_range operator*() const _NOEXCEPT {
+      // 为了什么需要这个分支 m_iter是分段数组block在中转数组map中的位置 当前block跟end位置的block是同一个block说明已经是最后一个分段分组了
+      // 变相说明最后一个分段数组只使用了一部分 现在开始使用剩余的部分
       if (__pos_.__m_iter_ == __end_.__m_iter_) {
+        // 保证最后一个block不越界
         return __deque_block_range(__pos_.__ptr_, __end_.__ptr_);
       }
+      // 完整的block
       return __deque_block_range(__pos_.__ptr_, *__pos_.__m_iter_ + __block_size);
     }
 
@@ -681,9 +689,19 @@ public:
     return const_iterator(__mp, __map_.empty() ? 0 : *__mp + __start_ % __block_size);
   }
 
+  // deque数据区域在逻辑上的内存边界 也就是[start...end)这连续的逻辑内存上都存放的是数据
+  // end指针就是这个边界
+  // 这个函数返回的是逻辑上最后一个元素之后的位置 也就是从back端存放元素的位置
+  // deque为了利用逻辑上的循环数组 预留了一个哨兵槽位用来区分empty/full 所以现在返回出去的指针是可能指向这个保留槽的
+  // 各司其职 这个函数只负责返回最后一个元素的下一个位置 真正写的地方会再去保证哨兵位置的预留
   _LIBCPP_HIDE_FROM_ABI iterator end() _NOEXCEPT {
+    // start是第1个元素在deque的逻辑内存偏移位置 size是当前deque元素数量
+    // 定位到deque虚拟线性空间的逻辑偏移
     size_type __p      = size() + __start_;
+    // p/block_size计算的是第几个分段数组
+    // mp是定位到哪一个分段数组
     __map_pointer __mp = __map_.begin() + __p / __block_size;
+    // p%block_size计算的是在分段数组内的偏移
     return iterator(__mp, __map_.empty() ? 0 : *__mp + __p % __block_size);
   }
 
@@ -857,8 +875,10 @@ public:
   }
   // 分段存储的结构 最多可以放多少个元素
   _LIBCPP_HIDE_FROM_ABI size_type __capacity() const {
-    // 为什么减1 每个分段预留1个空间的原因
-    // 避免begin==end的语义二义性 指针begin==end标识分段是空的 如果把分段填满也会出现begin==end 导致想要明确区分空还是满还需要额外的状态标识 通过牺牲一个空间的方式简化了数据结构
+    // 为什么减1 deque把物理上的分段数组上逻辑上组成一个循环的线性地址空间
+    // 为了区分empty和full的语义 牺牲一个空间 用一个哨兵槽
+    // 也就说哨兵槽永远是逻辑capacity的末尾
+    // deque永远保证size<capacity
     return __map_.size() == 0 ? 0 : __map_.size() * __block_size - 1;
   }
   _LIBCPP_HIDE_FROM_ABI size_type __block_count() const { return __map_.size(); }
@@ -1335,6 +1355,7 @@ deque<_Tp, _Allocator>& deque<_Tp, _Allocator>::operator=(const deque& __c) {
 template <class _Tp, class _Allocator>
 deque<_Tp, _Allocator>::deque(initializer_list<value_type> __il) : __start_(0), __size_(0, __default_init_tag()) {
   __annotate_new(0);
+  // 实际内存空间的开辟会在添加元素期间触发
   __append(__il.begin(), __il.end());
 }
 
@@ -1969,20 +1990,27 @@ _LIBCPP_HIDE_FROM_ABI void deque<_Tp, _Allocator>::__append_with_sentinel(_Input
 template <class _Tp, class _Allocator>
 template <class _ForIter, __enable_if_t<__has_forward_iterator_category<_ForIter>::value, int> >
 void deque<_Tp, _Allocator>::__append(_ForIter __f, _ForIter __l) {
+  // 从f开始的n个元素添加到当前deque中 加到back端
   __append_with_size(__f, std::distance(__f, __l));
 }
 
-// 从f指针开始 n个元素添加到deque
+// 从f指针开始 n个元素添加到deque 添加到back端
 template <class _Tp, class _Allocator>
 template <class _InputIterator>
 _LIBCPP_HIDE_FROM_ABI void deque<_Tp, _Allocator>::__append_with_size(_InputIterator __f, size_type __n) {
   allocator_type& __a       = __alloc();
+  // 当前deque的back端有多少空间
   size_type __back_capacity = __back_spare();
+  // back端现有的空间不够用 触发扩容
   if (__n > __back_capacity)
     __add_back_capacity(__n - __back_capacity);
 
   // __n <= __back_capacity
   __annotate_increase_back(__n);
+  // 两层for循环解决的是什么问题
+  // deque用的技术的物理分段内存做成逻辑连续循环空间
+  // 第一层循环解决的是跨段问题
+  // 第二层循环的保证同一个分段数组构造元素的事务语义 出现了问题或者异常回滚恢复
   for (__deque_block_range __br : __deque_range(end(), end() + __n)) {
     _ConstructTransaction __tx(this, __br);
     for (; __tx.__pos_ != __tx.__end_; ++__tx.__pos_, (void)++__f) {
@@ -2010,6 +2038,7 @@ void deque<_Tp, _Allocator>::__append(size_type __n) {
 template <class _Tp, class _Allocator>
 void deque<_Tp, _Allocator>::__append(size_type __n, const value_type& __v) {
   allocator_type& __a       = __alloc();
+  // 当前back端还有多少空间
   size_type __back_capacity = __back_spare();
   if (__n > __back_capacity)
     __add_back_capacity(__n - __back_capacity);
