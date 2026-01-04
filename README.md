@@ -32,6 +32,9 @@ stl源码拷贝 linux平台可以把整个源码拷贝过来 但是mac平台不�
 - 2 deque
   - [X] 构造函数
     - [X] 无参
+    - [X] deque
+    - [X] deque的迭代器
+    - [X] n个元素
 - 3 list
 - 4 forward_list
 - 5 map

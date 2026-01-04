@@ -15,6 +15,20 @@ std::ostream &operator<<(std::ostream &s, const std::deque<T> &v) {
 
 int main() {
     {
+        std::deque<std::string> d(5, "Mo");
+        std::cout << d << std::endl;
+    }
+    {
+        std::deque<int> d1 = {7, 5, 16, 8};
+        std::deque<int> d2(d1);
+        std::cout << d2 << std::endl;
+    }
+    {
+        std::deque<int> d1 = {7, 5, 16, 8};
+        std::deque<int> d2(d1.begin(), d1.end());
+        std::cout << d2 << std::endl;
+    }
+    {
         // initializer list构造
         std::deque<int> d = {7, 5, 16, 8};
         std::cout << d << std::endl;
