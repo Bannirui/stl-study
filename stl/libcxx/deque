@@ -2561,19 +2561,28 @@ template <class _Tp, class _Allocator>
 inline void deque<_Tp, _Allocator>::clear() _NOEXCEPT {
   __annotate_delete();
   allocator_type& __a = __alloc();
+  // 析构所有的元素
   for (iterator __i = begin(), __e = end(); __i != __e; ++__i)
     __alloc_traits::destroy(__a, std::addressof(*__i));
+  // 更新计数 当前deque实际元素数量0
   __size() = 0;
+  // 对中转数组的处理体现了deque的特性 deque要保证
+  // 1 start永远合法 也就是逻辑起点合法
+  // 2 begin()/end()的迭代逻辑永远成立
+  // 3 push_front/push_back至少在一侧是安全的
+  // 也就是说deque的最小稳定形态是至少要维护一个中转数组槽 理论上可以在最小稳定形态永远保留一个中转数组槽
+  // 但是用这样的唯一策略可能面临的场景是不论push_front还是push_back都会很快触发扩容
+  // 因此就把最小稳定态压缩到2个中转数组槽
   while (__map_.size() > 2) {
     __alloc_traits::deallocate(__a, __map_.front(), __block_size);
     __map_.pop_front();
   }
   switch (__map_.size()) {
   case 1:
-    __start_ = __block_size / 2;
+    __start_ = __block_size / 2; // 剩1个block分段数组时把逻辑起点定在中间位置 push_front还是push_back都会相对公平
     break;
   case 2:
-    __start_ = __block_size;
+    __start_ = __block_size; // 剩2个block分段数组时把逻辑起点定在block1的起点 这样block0就用来push_front block1用来push_back 既保证的push的相对公平 又不至于很快触发扩容
     break;
   }
   __annotate_new(0);

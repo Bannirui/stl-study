@@ -17,8 +17,22 @@ template<typename T>
 void print(std::deque<T> q) {
     std::cout << q << std::endl;
 }
+template<typename T>
+void print(std::string hint, std::deque<T> q) {
+    std::cout << hint << ": " << q << std::endl;
+}
 
 int main() {
+    {
+        std::deque<int> q = {1, 2, 3, 4, 5};
+        print("clear前", q);
+        q.clear();
+        print("clear后", q);
+    }
+    {
+        std::deque<int> q{1, 2, 3, 4, 5};
+        std::cout << "max_size=" << q.max_size() << std::endl;
+    }
     {
         std::deque<int> q{1, 2, 3, 4, 5};
         std::cout << q.size() << std::endl;
