@@ -561,7 +561,7 @@ private:
   // deque的中转数组 负责映射逻辑脚标索引跟物理内存块
   // 数据结构设计成两层的原因就是为了双端操作 避免像vector一样复制大块内存数据
   __map __map_;
-  // deque第1个元素的位置 是元素在整个deque虚拟线性空间的偏移
+  // deque第1个元素的位置 是元素在整个deque虚拟线性空间的偏移 首元素逻辑偏移
   size_type __start_;
   // deque逻辑上存在的元素个数 也就是当前deque有多少个元素
   __compressed_pair<size_type, allocator_type> __size_;
@@ -1684,28 +1684,52 @@ deque<_Tp, _Allocator>::emplace_front(_Args&&... __args) {
 #  endif
 }
 
+// 在p之前插入元素v p是插入点
 template <class _Tp, class _Allocator>
 typename deque<_Tp, _Allocator>::iterator deque<_Tp, _Allocator>::insert(const_iterator __p, value_type&& __v) {
+  // deque用的内存在物理上不是连续的 所以搬元素可能跨段 带来的开销是昂贵的 所以涉及搬元素的时候要选择双端元素小的那一侧
+  // begin到插入点有多少个元素 插入点前面的元素数量
   size_type __pos     = __p - begin();
+  // 插入点到end有多少个元素 插入点后面的元素数量
   size_type __to_end  = size() - __pos;
   allocator_type& __a = __alloc();
+  // 前面元素少就搬前面 后面元素少就搬后面 性能选择
   if (__pos < __to_end) { // insert by shifting things backward
-    if (__front_spare() == 0)
+    // 需要把插入点前面的元素整体往前挪一个位置 空出插入点
+    if (__front_spare() == 0) {
+      // front端已经没有空间了 在挪位置之前先在front端扩容
       __add_front_capacity();
+    }
     // __front_spare() >= 1
     __annotate_increase_front(1);
     if (__pos == 0) {
+      // 边界场景不需要搬位置 直接在当前首元素前一个位置构建新元素
       __alloc_traits::construct(__a, std::addressof(*--begin()), std::move(__v));
+      // 更新首元素的逻辑偏移
       --__start_;
+      // 新增了元素 更新元素个数计数
       ++__size();
     } else {
+      // 插入点前面的所有元素集体往前移一个位置
       iterator __b   = begin();
+      // 代码能执行到这 已经保证了在begin之前是有合法的内存空间的 这个内存空间是合法但是没构造的空间
       iterator __bm1 = std::prev(__b);
+      // 下面这行代码存在的唯一原因是原始内存 是未构造内存 C++的特性是对未构造对象只能construct不能assign
+      // 所以要利用下面的代码先构造对象 将来接收move过来的对象
       __alloc_traits::construct(__a, std::addressof(*__bm1), std::move(*__b));
+      // 比如之前是x1 x2 x3... begin指向的是x1
+      // 现在把内存构造完对象后变成了x1 x1 x2 x3... begin指向的是第一个x1
+      // 更新首元素逻辑位置和元素数量 下面就不用再更新了 只要负责挪位置空出插入点就行
       --__start_;
       ++__size();
-      if (__pos > 1)
+      if (__pos > 1) {
+        // 又是一个边界场景 现在的元素情况是x1 x1 x2 x3
+        //                                b
+        // 因为上面升级原始内存成为对象内存的时候相当于复制了一份begin位置的x1元素 所以如果插入点刚好是1 也就是现在x2位置就不用挪位置了 直接把第二个x1换成新的元素就行
+        // 把b后面的pos个元素集体往前移1个位置
         __b = std::move(std::next(__b), __b + __pos, __b);
+      }
+      // 这个时候就已经空出来了插入点位置 在插入点上构造新元素
       *__b = std::move(__v);
     }
   } else { // insert by shifting things forward

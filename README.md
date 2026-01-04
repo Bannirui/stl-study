@@ -7,43 +7,44 @@ stl源码拷贝 linux平台可以把整个源码拷贝过来 但是mac平台不�
 
 ## NOTE
 - 1 vector
-  - [X] 构造函数 
-  - [X] 析构函数
-  - [X] =
-  - [X] assign
-  - [X] get_allocator
-  - [X] at
-  - [X] []
-  - [X] front
-  - [X] back
-  - [X] data
-  - [X] 迭代器 begin end
-  - [X] empty
-  - [X] size
-  - [X] max_size
-  - [X] reserve
-  - [X] capacity
-  - [X] clear
-  - [X] insert
-  - [X] emplace
-  - [X] erase
-  - [X] push_back
-  - [X] emplace_back
+  - 构造函数 
+  - 析构函数
+  - =
+  - assign
+  - get_allocator
+  - at
+  - []
+  - front
+  - back
+  - data
+  - 迭代器 begin end
+  - empty
+  - size
+  - max_size
+  - reserve
+  - capacity
+  - clear
+  - insert
+  - emplace
+  - erase
+  - push_back
+  - emplace_back
 - 2 deque
-  - [X] 构造函数
-    - [X] 无参
-    - [X] deque
-    - [X] deque的迭代器
-    - [X] n个元素
-  - [X] =
-  - [X] assign
-  - [X] at
-  - [X] []运算符
-  - [X] front
-  - [X] back
-  - [X] empty
-  - [X] size
-  - [X] clear
+  - 构造函数
+    - 无参
+    - deque
+    - deque的迭代器
+    - n个元素
+  - =
+  - assign
+  - at
+  - []运算符
+  - front
+  - back
+  - empty
+  - size
+  - clear
+  - insert
 - 3 list
 - 4 forward_list
 - 5 map

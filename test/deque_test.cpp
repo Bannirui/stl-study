@@ -15,14 +15,20 @@ std::ostream &operator<<(std::ostream &s, const std::deque<T> &v) {
 
 template<typename T>
 void print(std::deque<T> q) {
-    std::cout << q << std::endl;
+    std::cout << q;
 }
 template<typename T>
 void print(std::string hint, std::deque<T> q) {
-    std::cout << hint << ": " << q << std::endl;
+    std::cout << hint << ": " << q;
 }
 
 int main() {
+    {
+        std::deque<int> q = {1, 2, 3};
+        print("insert前", q);
+        q.insert(q.begin(), 9);
+        print("insert后", q);
+    }
     {
         std::deque<int> q = {1, 2, 3, 4, 5};
         print("clear前", q);
