@@ -20,6 +20,10 @@ void print(std::deque<T> q) {
 
 int main() {
     {
+        std::deque<int> q{1, 2, 3, 4, 5};
+        std::cout << q.size() << std::endl;
+    }
+    {
         std::deque<int> q;
         std::cout << q.empty() << std::endl;
     }
