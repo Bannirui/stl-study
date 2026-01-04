@@ -6,7 +6,7 @@ stl源码拷贝 linux平台可以把整个源码拷贝过来 但是mac平台不�
 - archlinux `cp -R /usr/include/c++/15.2.1/* ./stl/libstdcxx/`
 
 ## NOTE
-- vector
+- 1 vector
   - [X] 构造函数 
   - [X] 析构函数
   - [X] =
@@ -29,4 +29,26 @@ stl源码拷贝 linux平台可以把整个源码拷贝过来 但是mac平台不�
   - [X] erase
   - [X] push_back
   - [X] emplace_back
-- deque
+- 2 deque
+- 3 list
+- 4 forward_list
+- 5 map
+- 6 set
+- 7 multimap
+- 8 multiset
+- 9 unordered_map
+- 10 unordered_set
+- 11 unordered_multimap
+- 12 unordered_multiset
+- 13 stack
+- 14 queue
+- 15 priority_queue
+- 16 basic_string
+- 17 array
+- 18 bitset
+- 19 span
+- 20 allocator
+- 21 pmr
+- 22 iterators
+- 23 algorithms
+- 24 ranges
