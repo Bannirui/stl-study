@@ -1567,8 +1567,10 @@ inline typename deque<_Tp, _Allocator>::const_reference deque<_Tp, _Allocator>::
   return *(*(__map_.begin() + __p / __block_size) + __p % __block_size);
 }
 
+// deque的front首元素
 template <class _Tp, class _Allocator>
 inline typename deque<_Tp, _Allocator>::reference deque<_Tp, _Allocator>::front() _NOEXCEPT {
+  // start是在deque逻辑线性表的位置->映射到哪个block分段数组->在block分段数组的偏移->找到元素
   return *(*(__map_.begin() + __start_ / __block_size) + __start_ % __block_size);
 }
 

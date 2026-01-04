@@ -20,6 +20,11 @@ void print(std::deque<T> q) {
 
 int main() {
     {
+        std::deque<int> q = {1, 3};
+        int i = q.front();
+        std::cout << i << std::endl;
+    }
+    {
         std::deque<int> q = {1, 2, 3};
         print(q);
         q[4] = 88;
