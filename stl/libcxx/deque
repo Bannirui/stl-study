@@ -1579,9 +1579,12 @@ inline typename deque<_Tp, _Allocator>::const_reference deque<_Tp, _Allocator>::
   return *(*(__map_.begin() + __start_ / __block_size) + __start_ % __block_size);
 }
 
+// deque的back端末元素
 template <class _Tp, class _Allocator>
 inline typename deque<_Tp, _Allocator>::reference deque<_Tp, _Allocator>::back() _NOEXCEPT {
+  // 定位到在deque逻辑线性空间的位置
   size_type __p = size() + __start_ - 1;
+  // 逻辑位置->哪个分段数组->分段数组的偏移
   return *(*(__map_.begin() + __p / __block_size) + __p % __block_size);
 }
 
