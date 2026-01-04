@@ -1547,9 +1547,12 @@ deque<_Tp, _Allocator>::operator[](size_type __i) const _NOEXCEPT {
 
 template <class _Tp, class _Allocator>
 inline typename deque<_Tp, _Allocator>::reference deque<_Tp, _Allocator>::at(size_type __i) {
+  // deque在逻辑上是把空间看成线性地址空间 做越界防御
   if (__i >= size())
     std::__throw_out_of_range("deque");
+  // 逻辑位置
   size_type __p = __start_ + __i;
+  // 逻辑位置->先定位到block->再定位到block内偏移
   return *(*(__map_.begin() + __p / __block_size) + __p % __block_size);
 }
 

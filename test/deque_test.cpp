@@ -20,6 +20,16 @@ void print(std::deque<T> q) {
 
 int main() {
     {
+        std::deque<int> q = {1, 2, 3, 4, 5};
+        print(q);
+        q.at(1) = 88;
+        print(q);
+    }
+    {
+        std::deque<int> q;
+        auto a = q.get_allocator();
+    }
+    {
         std::deque<int> q;
         q.assign(2, 8);
         print(q);
