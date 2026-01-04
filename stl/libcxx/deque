@@ -1345,6 +1345,7 @@ deque<_Tp, _Allocator>::deque(const deque& __c, const __type_identity_t<allocato
 
 template <class _Tp, class _Allocator>
 deque<_Tp, _Allocator>& deque<_Tp, _Allocator>::operator=(const deque& __c) {
+  // 防御
   if (this != std::addressof(__c)) {
     __copy_assign_alloc(__c);
     assign(__c.begin(), __c.end());

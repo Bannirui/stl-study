@@ -13,7 +13,19 @@ std::ostream &operator<<(std::ostream &s, const std::deque<T> &v) {
     return s << "}\n";
 }
 
+template<typename T>
+void print(std::deque<T> q) {
+    std::cout << q << std::endl;
+}
+
 int main() {
+    {
+        std::deque<int> x = {1, 2, 3, 4, 5};
+        print(x);
+        std::deque<int> y;
+        y = x;
+        print(y);
+    }
     {
         std::deque<std::string> d(5, "Mo");
         std::cout << d << std::endl;
