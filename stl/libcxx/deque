@@ -725,6 +725,7 @@ public:
   // deque实际上存放了多少个元素
   _LIBCPP_HIDE_FROM_ABI size_type size() const _NOEXCEPT { return __size(); }
 
+  // deque实际上存放了多少个元素
   _LIBCPP_HIDE_FROM_ABI size_type& __size() _NOEXCEPT { return __size_.first(); }
   // deque实际存放了多少个元素
   _LIBCPP_HIDE_FROM_ABI const size_type& __size() const _NOEXCEPT { return __size_.first(); }
@@ -1477,14 +1478,20 @@ _LIBCPP_HIDE_FROM_ABI void deque<_Tp, _Allocator>::__assign_with_size(_Iterator 
   }
 }
 
+// 指定n个v
 template <class _Tp, class _Allocator>
 void deque<_Tp, _Allocator>::assign(size_type __n, const value_type& __v) {
   if (__n > size()) {
+    // 当前的元素少 全部指定成新元素v 然后还要再补
     std::fill_n(begin(), size(), __v);
+    // 一共要指定n个 数量不够 还要再补
     __n -= size();
+    // 补元素
     __append(__n, __v);
-  } else
+  } else {
+    // 当前deque的元素多 指定完n个v元素后还会有多余的老元素要解构掉
     __erase_to_end(std::fill_n(begin(), __n, __v));
+  }
 }
 
 template <class _Tp, class _Allocator>
@@ -2500,18 +2507,23 @@ typename deque<_Tp, _Allocator>::iterator deque<_Tp, _Allocator>::erase(const_it
   return begin() + __pos;
 }
 
+// f将是deque的新end 也就是当前end到f之间的元素[f...end)都要解构掉
 template <class _Tp, class _Allocator>
 void deque<_Tp, _Allocator>::__erase_to_end(const_iterator __f) {
   size_type __old_sz    = size();
   size_type __old_start = __start_;
+  // 当前的end
   iterator __e          = end();
+  // 新的end是f 要解构的元素有n个
   difference_type __n   = __e - __f;
   if (__n > 0) {
     allocator_type& __a   = __alloc();
     iterator __b          = begin();
+    // [...begin) [begin...f) [f...end) [end...) 下面遍历的作用就是解构[f...end)的元素 因为新的end就是f 所以后面的元素是多余了
     difference_type __pos = __f - __b;
     for (iterator __p = __b + __pos; __p != __e; ++__p)
       __alloc_traits::destroy(__a, std::addressof(*__p));
+    // 解构掉了n个元素 也就是说deque实际存放的元素减少了n个 更新计数
     __size() -= __n;
     __annotate_shrink_back(__old_sz, __old_start);
     while (__maybe_remove_back_spare()) {

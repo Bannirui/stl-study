@@ -20,6 +20,13 @@ void print(std::deque<T> q) {
 
 int main() {
     {
+        std::deque<int> q;
+        q.assign(2, 8);
+        print(q);
+        q.assign(3, 5);
+        print(q);
+    }
+    {
         std::deque<int> x = {1, 2, 3, 4, 5};
         print(x);
         std::deque<int> y;
