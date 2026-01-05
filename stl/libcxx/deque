@@ -1622,8 +1622,10 @@ void deque<_Tp, _Allocator>::push_front(const value_type& __v) {
 template <class _Tp, class _Allocator>
 void deque<_Tp, _Allocator>::push_back(value_type&& __v) {
   allocator_type& __a = __alloc();
-  if (__back_spare() == 0)
+  if (__back_spare() == 0) {
+    // 尾端没空间了 在尾端扩容1个block
     __add_back_capacity();
+  }
   // __back_spare() >= 1
   __annotate_increase_back(1);
   __alloc_traits::construct(__a, std::addressof(*end()), std::move(__v));

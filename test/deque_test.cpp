@@ -2,6 +2,7 @@
 // Created by rui ding on 2026/1/4.
 //
 
+#include <iomanip>
 #include <iostream>
 
 #include "x.h"
@@ -25,6 +26,16 @@ void print(std::string hint, std::deque<T> q) {
 }
 
 int main() {
+    {
+        std::deque<std::string> letters;
+        letters.push_back("abc");
+        std::string s{"def"};
+        letters.push_back(std::move(s));
+        std::cout << "std::deque letters holds: ";
+        for (auto&& e : letters)
+            std::cout << std::quoted(e) << ' ';
+        std::cout << "\nMoved-from string s holds: " << std::quoted(s) << '\n';
+    }
     {
         std::deque<int> q{1, 2, 3, 4, 5};
         print("erase前",q);
