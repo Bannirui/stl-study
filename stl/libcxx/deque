@@ -2108,45 +2108,75 @@ void deque<_Tp, _Allocator>::__append(size_type __n, const value_type& __v) {
   }
 }
 
-// 在front端扩容 扩容的单位是一个分段数组
+// 在front方向扩容 扩容的单位是一个分段数组
 // Create front capacity for one block of elements.
 // Strong guarantee.  Either do it or don't touch anything.
 template <class _Tp, class _Allocator>
 void deque<_Tp, _Allocator>::__add_front_capacity() {
   allocator_type& __a = __alloc();
+  // 目的是要保证front端有至少一个完整的block可用 内存分配本身是个性能开销 因此能避免就会避免 如果尾部方向刚好有没使用的逻辑槽位 也就是说明有已经分配好的分段数组还要没使用 可以搬到front端 从而避免了内存分配
   if (__back_spare() >= __block_size) {
+    // 尾端方向至少有1个完全空的block 通过指针操作搬到front方向
+    // 搬完之后相当于在逻辑视图上逻辑起点整体后移了1个block
     __start_ += __block_size;
+    // 拿到最后的这个完整的空的block 这个中转数组的槽是空的 仅仅是分配好了内存但是逻辑视图并没有使用
     pointer __pt = __map_.back();
+    // 把分段数组从中转数组最后一个插槽拿走
     __map_.pop_back();
+    // 搬到中转数组的最前面
     __map_.push_front(__pt);
   }
   // Else if __map_.size() < __map_.capacity() then we need to allocate 1 buffer
   else if (__map_.size() < __map_.capacity()) { // we can put the new buffer into the map, but don't shift things around
+    // 中转数组本身还有空槽位 但是在front方向没有可用的block 所以要做的是
+    // 1 分配分段数组内存
+    // 2 在中转数组的front方向腾出槽位
+    // 3 把分段数组插到front方向的插槽上
     // until all buffers are allocated.  If we throw, we don't need to fix
     // anything up (any added buffers are undetectible)
     if (__map_.__front_spare() > 0)
+      // 中转数组的front方向有空槽位 分配一条分段数组直接插到中转数组前面就行
       __map_.push_front(__alloc_traits::allocate(__a, __block_size));
     else {
+      // 中转数组在front方向没有空插槽 先在中转数组尾部挂上一条分段数组 然后把这条分段数组插槽搬到中转数组的front端
       __map_.push_back(__alloc_traits::allocate(__a, __block_size));
       // Done allocating, reorder capacity
+      // 上面刚刚新加的分段数组 它现在处在中转数组的尾部 把它拿出来搬到中转数组的front端
       pointer __pt = __map_.back();
       __map_.pop_back();
       __map_.push_front(__pt);
     }
+    // 调整逻辑起点在逻辑视图的位置
+    // 为什么要考虑中转数组只有1个槽位的情况 这种情况把逻辑起点居中是为了尽可能避免在end方向的扩容
+    // 如果不考虑这个边界 直接start+=block_size就会导致逻辑起点被搬到了分段数组的最后位置 如果这个时候push_back就会触发在尾部的扩容
     __start_ = __map_.size() == 1 ? __block_size / 2 : __start_ + __block_size;
   }
   // Else need to allocate 1 buffer, *and* we need to reallocate __map_.
   else {
+    // 中转数组也没有空槽位 要分配的内存就包括block和中转数组这两部分
+    // 1 先分配一个更大的map中转数组
+    // 2 分配一个新的block 准备放到中转数组的front方向
+    // 3 原子性替换中转数组map 调整逻辑视图
+    // 先分配更大的中转数组 扩容机制2倍 此时构造的map对象是栈对象 离开作用域内存会被自动释放掉 结合swap交换内存所有权 实现对旧内存释放 这个操作在vector中也有
     __split_buffer<pointer, __pointer_allocator&> __buf(
         std::max<size_type>(2 * __map_.capacity(), 1), 0, __map_.__alloc());
 
+    // 下面这一通操作在干啥
+    // 1 没有用裸指针的原因是block内存分配可能失败 往中转数组槽添加可能失败 不可控
+    // 2 用unique_ptr的时候指定了deleter回调 一旦发生异常就调用自定义的deleter 防止内存泄漏
+    // 3 保证把block正式交给map之前即使出现异常可以自动释放内存防止内存泄漏
     typedef __allocator_destructor<_Allocator> _Dp;
     unique_ptr<pointer, _Dp> __hold(__alloc_traits::allocate(__a, __block_size), _Dp(__a, __block_size));
+    // 执行完后新中转数组map的第1个槽就是新block 达到了front方向扩容的效果
     __buf.push_back(__hold.get());
     __hold.release();
-
+    // 然后就是把老中转数组的槽一个个全部按顺序搬到新中转数组
     for (__map_pointer __i = __map_.begin(); __i != __map_.end(); ++__i)
       __buf.push_back(*__i);
+    // 至此已经实际完成了在新中转数组front方向扩容block的效果
+    // 用一堆swap
+    // 1 是为了保证原子操作
+    // 2 是为了完成内存所有权的交换 执行之后 老map掌管新中转数组内存 新map掌管旧中转数组内存 离开这个函数作用域时新map这个栈对象会被析构掉 带着它掌管的内存一起被释放 实现了老map中转数组内存的释放
     std::swap(__map_.__first_, __buf.__first_);
     std::swap(__map_.__begin_, __buf.__begin_);
     std::swap(__map_.__end_, __buf.__end_);
