@@ -2262,13 +2262,17 @@ void deque<_Tp, _Allocator>::__add_front_capacity(size_type __n) {
   }
 }
 
+// 在back方向扩容1个block 跟在front方向大体一样
 // Create back capacity for one block of elements.
 // Strong guarantee.  Either do it or don't touch anything.
 template <class _Tp, class _Allocator>
 void deque<_Tp, _Allocator>::__add_back_capacity() {
   allocator_type& __a = __alloc();
   if (__front_spare() >= __block_size) {
+    // 避免内存分配的开销 优先从front搬没有被逻辑视图使用的现成的block
+    // 把front的分段内存搬到back端后 相当于把逻辑起点前移了
     __start_ -= __block_size;
+    // 把空闲block从中转数组槽的front摘下来搬到back方向
     pointer __pt = __map_.front();
     __map_.pop_front();
     __map_.push_back(__pt);

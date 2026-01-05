@@ -27,6 +27,10 @@ void print(std::string hint, std::deque<T> q) {
 int main() {
     {
         std::deque<X> q;
+        q.emplace_back("one");
+    }
+    {
+        std::deque<X> q;
         q.emplace(q.end(), "one");
     }
     {
