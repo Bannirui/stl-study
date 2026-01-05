@@ -27,20 +27,26 @@ void print(std::string hint, std::deque<T> q) {
 
 int main() {
     {
+        std::deque<int> q{1, 2};
+        print("pop_back前", q);
+        q.pop_back();
+        print("pop_back后", q);
+    }
+    {
         std::deque<std::string> letters;
         letters.push_back("abc");
         std::string s{"def"};
         letters.push_back(std::move(s));
         std::cout << "std::deque letters holds: ";
-        for (auto&& e : letters)
+        for (auto &&e: letters)
             std::cout << std::quoted(e) << ' ';
         std::cout << "\nMoved-from string s holds: " << std::quoted(s) << '\n';
     }
     {
         std::deque<int> q{1, 2, 3, 4, 5};
-        print("erase前",q);
+        print("erase前", q);
         q.erase(q.begin());
-        print("erase后",q);
+        print("erase后", q);
     }
     {
         std::deque<X> q;

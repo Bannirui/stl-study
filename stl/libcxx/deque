@@ -2409,11 +2409,16 @@ void deque<_Tp, _Allocator>::pop_front() {
 template <class _Tp, class _Allocator>
 void deque<_Tp, _Allocator>::pop_back() {
   _LIBCPP_ASSERT_VALID_ELEMENT_ACCESS(!empty(), "deque::pop_back called on an empty deque");
+  // 当前deque有多少个元素
   size_type __old_sz    = size();
+  // 逻辑起点
   size_type __old_start = __start_;
   allocator_type& __a   = __alloc();
+  // 逻辑终点
   size_type __p         = size() + __start_ - 1;
+  // 把最后一个元素显式析构掉
   __alloc_traits::destroy(__a, std::__to_address(*(__map_.begin() + __p / __block_size) + __p % __block_size));
+  // 少了一个元素 更新计数 相当于更新了逻辑终点位置
   --__size();
   __annotate_shrink_back(__old_sz, __old_start);
   __maybe_remove_back_spare();
