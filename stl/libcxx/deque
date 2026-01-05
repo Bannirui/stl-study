@@ -2085,9 +2085,11 @@ void deque<_Tp, _Allocator>::__append(size_type __n) {
     __add_back_capacity(__n - __back_capacity);
   // __n <= __back_capacity
   __annotate_increase_back(__n);
+  // 可能跨段 所以要for遍历 处理每个block分段数组的时候保证全部成功 但凡出现构造失败就回滚整个block的状态
   for (__deque_block_range __br : __deque_range(end(), end() + __n)) {
     _ConstructTransaction __tx(this, __br);
     for (; __tx.__pos_ != __tx.__end_; ++__tx.__pos_) {
+      // 构造元素 类型的默认值
       __alloc_traits::construct(__a, std::__to_address(__tx.__pos_));
     }
   }

@@ -27,6 +27,12 @@ void print(std::string hint, std::deque<T> q) {
 
 int main() {
     {
+        std::deque<int> q = {1, 2, 3, 4, 5};
+        print("resize前", q);
+        q.resize(10);
+        print("resize后", q);
+    }
+    {
         std::deque<int> q{1, 2};
         print("pop_back前", q);
         q.pop_back();
