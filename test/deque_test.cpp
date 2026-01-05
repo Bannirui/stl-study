@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include "x.h"
+
 template<typename T>
 std::ostream &operator<<(std::ostream &s, const std::deque<T> &v) {
     s.put('{');
@@ -23,6 +25,10 @@ void print(std::string hint, std::deque<T> q) {
 }
 
 int main() {
+    {
+        std::deque<X> q;
+        q.emplace(q.end(), "one");
+    }
     {
         std::deque<int> q = {1, 2, 3};
         print("insert前", q);

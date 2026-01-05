@@ -1754,15 +1754,25 @@ typename deque<_Tp, _Allocator>::iterator deque<_Tp, _Allocator>::insert(const_i
   return begin() + __pos;
 }
 
+// 在p之前构造个元素 p是插入点
 template <class _Tp, class _Allocator>
 template <class... _Args>
 typename deque<_Tp, _Allocator>::iterator deque<_Tp, _Allocator>::emplace(const_iterator __p, _Args&&... __args) {
+  // 要移动元素空出插入点 看看哪头元素少就移动哪头划算
+  // 插入点前面有多少个元素
   size_type __pos     = __p - begin();
+  // 插入点后面有多少个元素
   size_type __to_end  = size() - __pos;
   allocator_type& __a = __alloc();
+  // 下面整个逻辑和insert函数几乎是一样的 无非是插入点元素的构造区别
+  // 1 insert用的是现成的对象 emplace没有现成的对象
+  // 2 insert用的是对象的移动赋值或者复制赋值 emplace用的是移动构造或者复制构造
   if (__pos < __to_end) { // insert by shifting things backward
-    if (__front_spare() == 0)
+    // 移动插入点前面的元素划算 移动的方式是插入点前面所有的元素整体前移 所以要看看在front端还有没有空间了
+    if (__front_spare() == 0) {
+      // front端没有空间 需要先扩容 为前移元素预留空间
       __add_front_capacity();
+    }
     // __front_spare() >= 1
     __annotate_increase_front(1);
     if (__pos == 0) {
@@ -2098,6 +2108,7 @@ void deque<_Tp, _Allocator>::__append(size_type __n, const value_type& __v) {
   }
 }
 
+// 在front端扩容 扩容的单位是一个分段数组
 // Create front capacity for one block of elements.
 // Strong guarantee.  Either do it or don't touch anything.
 template <class _Tp, class _Allocator>
