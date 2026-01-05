@@ -26,6 +26,12 @@ void print(std::string hint, std::deque<T> q) {
 
 int main() {
     {
+        std::deque<int> q{1, 2, 3, 4, 5};
+        print("erase前",q);
+        q.erase(q.begin());
+        print("erase后",q);
+    }
+    {
         std::deque<X> q;
         q.emplace_back("one");
     }

@@ -2531,24 +2531,34 @@ void deque<_Tp, _Allocator>::__move_construct_backward_and_check(
   }
 }
 
+// f是删除点
 template <class _Tp, class _Allocator>
 typename deque<_Tp, _Allocator>::iterator deque<_Tp, _Allocator>::erase(const_iterator __f) {
   size_type __old_sz    = size();
   size_type __old_start = __start_;
   iterator __b          = begin();
+  // 删除点离front有多远
   difference_type __pos = __f - __b;
   iterator __p          = __b + __pos;
   allocator_type& __a   = __alloc();
   if (static_cast<size_t>(__pos) <= (size() - 1) / 2) { // erase from front
+    // 删除点靠近front 从前面动手划算 也就是front端收缩 [begin...p)整体后移1个位置
+    // [b...p)区间的元素按照从后往前的顺序后移 移动到以result为结尾的区间上
     std::move_backward(__b, __p, std::next(__p));
+    // 现在begin位置上的元素就是重复元素了 要显式析构掉
     __alloc_traits::destroy(__a, std::addressof(*__b));
+    // 前端收缩
     --__size();
     ++__start_;
     __annotate_shrink_front(__old_sz, __old_start);
     __maybe_remove_front_spare();
   } else { // erase from back
+    // 删除点靠近尾端 从尾端删除划算
+    // (p...end)区间的元素按照从前往后的顺序整体前移 移动到以p开始的区间 相当于整体前移1个位置 然后在最后的位置上产生已经构造的重复元素
     iterator __i = std::move(std::next(__p), end(), __p);
+    // 析构掉末尾的重复元素
     __alloc_traits::destroy(__a, std::addressof(*__i));
+    // 尾端收缩
     --__size();
     __annotate_shrink_back(__old_sz, __old_start);
     __maybe_remove_back_spare();
