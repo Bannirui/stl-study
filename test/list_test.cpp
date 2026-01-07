@@ -16,6 +16,14 @@ void print_list(std::string msg, const std::list<T> &l) {
 
 int main() {
     {
+        std::list<int> l(3, 1);
+        print_list("3", l);
+    }
+    {
+        std::list<int> l(3);
+        print_list("2", l);
+    }
+    {
         std::list<std::string> l;
         print_list("1", l);
     }
