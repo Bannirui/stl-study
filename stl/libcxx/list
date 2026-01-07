@@ -699,6 +699,7 @@ public:
                 "[allocator.requirements] states that rebinding an allocator to the same type should result in the "
                 "original allocator");
 
+  // 无参构造没有任何开销
   _LIBCPP_HIDE_FROM_ABI list() _NOEXCEPT_(is_nothrow_default_constructible<__node_allocator>::value) {}
   _LIBCPP_HIDE_FROM_ABI explicit list(const allocator_type& __a) : base(__a) {}
   _LIBCPP_HIDE_FROM_ABI explicit list(size_type __n);
@@ -985,9 +986,13 @@ inline void list<_Tp, _Alloc>::__link_nodes_at_front(__link_pointer __f, __link_
   base::__end_.__next_  = __f;
 }
 
+// 前置条件是[f...l]已经是构造好的区间 整体挂到当前链表尾部 也就是最后一个数据结点之后 end哨兵之前
+// 整个操作就是单纯的指针重连操作 不存在内存分配和对象的构造和析构
 // Link in nodes [__f, __l] at the back of the list
 template <class _Tp, class _Alloc>
 inline void list<_Tp, _Alloc>::__link_nodes_at_back(__link_pointer __f, __link_pointer __l) {
+  // 当前的链表是 x<->end哨兵
+  // 把 <->f...l<-> 这一截挂到x后面变成x<->f...l<->end哨兵
   __l->__next_          = base::__end_as_link();
   __f->__prev_          = base::__end_.__prev_;
   __f->__prev_->__next_ = __f;
@@ -1271,7 +1276,15 @@ void list<_Tp, _Alloc>::push_front(value_type&& __x) {
 
 template <class _Tp, class _Alloc>
 void list<_Tp, _Alloc>::push_back(value_type&& __x) {
+  // 创建链表结点涉及
+  // 1 分配结点内存
+  // 2 在结点内构造对象
+  // 3 初始化node内部结构
+  // 关于链表结点 它包含数据 前驱指针 后继指针 对于链表结构的操作而言 是不需要对数据内容有感知的 换言之纯粹的链表操作面前暴露数据也是不安全的 因此在逻辑上把链表节点分成了两层
+  // 1 link_pointer 只感知前驱/后继指针 用在链表结构操作上
+  // 2 node_pointer 还感知数据和内存分配器
   __node_pointer __node = this->__create_node(/* prev = */ nullptr, /* next = */ nullptr, std::move(__x));
+  // 准备链表结点操作 先显示降级
   __link_pointer __nl   = __node->__as_link();
   __link_nodes_at_back(__nl, __nl);
   ++base::__sz();
