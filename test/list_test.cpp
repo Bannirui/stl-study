@@ -16,6 +16,19 @@ void print_list(std::string msg, const std::list<T> &l) {
 
 int main() {
     {
+        std::initializer_list<int> x = {1, 2, 3};
+        std::list<int> l = {5, 6};
+        // list对象已经构造好 触发了=运算符重载
+        l = x;
+        print_list("5", l);
+    }
+    {
+        std::initializer_list<int> x = {1, 2};
+        // 此时list对象还没构造 因此触发的是list的构造函数 参数是初始化列表版本的构造函数
+        std::list<int> l = x;
+        print_list("5", l);
+    }
+    {
         //   ->1<->2<->3<-
         //   |           |
         //   |____end____|

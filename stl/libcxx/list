@@ -531,6 +531,9 @@ protected:
   _LIBCPP_HIDE_FROM_ABI void clear() _NOEXCEPT;
   _LIBCPP_HIDE_FROM_ABI bool empty() const _NOEXCEPT { return __sz() == 0; }
 
+  // 哨兵的后继要么是自己要么是第一个数据结点
+  // 链表为空时 哨兵的后继指向的是自己
+  // 链表不空时 哨兵的后继指向的是第一个数据结点
   _LIBCPP_HIDE_FROM_ABI iterator begin() _NOEXCEPT { return iterator(__end_.__next_); }
   _LIBCPP_HIDE_FROM_ABI const_iterator begin() const _NOEXCEPT { return const_iterator(__end_.__next_); }
   _LIBCPP_HIDE_FROM_ABI iterator end() _NOEXCEPT { return iterator(__end_as_link()); }
@@ -1145,17 +1148,34 @@ void list<_Tp, _Alloc>::assign(
   __assign_with_sentinel(__f, __l);
 }
 
+// 用区间[f...l)对当前链表进行赋值 那就有三种情况 原则就是多退少补
+// 1 当前链表数据结点数<区间的结点个数 赋值完要在当前链表上尾插
+// 2 当前链表数据结点数=区间的结点个数 赋值就结束
+// 3 当前链表数据结点数>区间的结点个数 赋值完还是要把当前链表尾部节点删掉几个
 template <class _Tp, class _Alloc>
 template <class _Iterator, class _Sentinel>
 _LIBCPP_HIDE_FROM_ABI void list<_Tp, _Alloc>::__assign_with_sentinel(_Iterator __f, _Sentinel __l) {
+  // 链表提供的迭代器 begin在链表为空时是哨兵自己 在链表不为空时指向的是第一个数据结点
   iterator __i = begin();
+  // 链表里面的入环结点 哨兵结点
   iterator __e = end();
-  for (; __f != __l && __i != __e; ++__f, (void)++__i)
+  for (; __f != __l && __i != __e; ++__f, (void)++__i) {
+    // 把目标区间的元素赋值到当前链表
     *__i = *__f;
-  if (__i == __e)
+  }
+  // 执行到这一定是二者之一 一定是目标区间到头了或者当前链表到头了
+  if (__i == __e) {
+    // 链表到头了 这个时候目标区间可能还没到头也可能也到头了
+    // 区间的[f...l) 尾插到当前链表里面
+    // 当目标区间也到头的时候 就相当于区间长度=链表数据长度 此时区间[f...l)退化成[l...l) 在调用的函数体内部也有边界判断 是不处理的
     __insert_with_sentinel(__e, std::move(__f), std::move(__l));
-  else
+  }
+  else {
+    // 区间到头了 这个时候链表可能到头了也可能还没到头
+    // 链表的[i...e)结点删除
+    // 当链表也到头了 就相当于区间长度=链表数据长度 此时链表的结点区间[i...e)就退化成[e...e) 在调用删除链表节点的函数内部也有边界判断 不会处理
     erase(__i, __e);
+  }
 }
 
 template <class _Tp, class _Alloc>
