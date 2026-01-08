@@ -13,3 +13,6 @@ add_executable(list_test list_test.cpp ${HDRS} ${SRCS})
 
 # 单链表
 add_executable(forward_list_test forward_list_test.cpp ${HDRS} ${SRCS})
+
+# 有序哈希表
+add_executable(map_test map_test.cpp ${HDRS} ${SRCS})
