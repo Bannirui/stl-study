@@ -16,6 +16,11 @@ void print_list(std::string msg, const std::list<T> &l) {
 
 int main() {
     {
+        std::list<int> l;
+        l.assign(3, 2);
+        print_list("6", l);
+    }
+    {
         std::initializer_list<int> x = {1, 2, 3};
         std::list<int> l = {5, 6};
         // list对象已经构造好 触发了=运算符重载
