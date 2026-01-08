@@ -299,6 +299,10 @@ struct __list_node_base {
   __link_pointer __prev_;
   __link_pointer __next_;
 
+  // 在构造链表时会触发哨兵结点的构造
+  // 一个哨兵解决两个哨兵的核心就是在哨兵内部维护两个指针 后继指向自己就行
+  // 逻辑front哨兵就是自己
+  // 逻辑end哨兵就是自己的后继
   _LIBCPP_HIDE_FROM_ABI __list_node_base()
       : __prev_(_NodeTraits::__unsafe_link_pointer_cast(__self())),
         __next_(_NodeTraits::__unsafe_link_pointer_cast(__self())) {}
@@ -499,6 +503,7 @@ protected:
                 "internal allocator type must differ from user-specified "
                 "type; otherwise overload resolution breaks");
 
+  // 链表的哨兵结点 在双端链表的实现中并没有引入两个哨兵 仅仅用这个end作为链表的环的锚点
   __node_base __end_;
   __compressed_pair<size_type, __node_allocator> __size_alloc_;
 
@@ -663,6 +668,8 @@ void __list_imp<_Tp, _Alloc>::swap(__list_imp& __c)
     __c.__end_.__prev_->__next_ = __c.__end_.__next_->__prev_ = __c.__end_as_link();
 }
 
+// 链表继承自list_imp 在list_imp中有个成员end 就是链表的哨兵
+// 链表本质是带环的双向链表 end哨兵就是入环点
 template <class _Tp, class _Alloc /*= allocator<_Tp>*/>
 class _LIBCPP_TEMPLATE_VIS list : private __list_imp<_Tp, _Alloc> {
   typedef __list_imp<_Tp, _Alloc> base;
@@ -699,7 +706,7 @@ public:
                 "[allocator.requirements] states that rebinding an allocator to the same type should result in the "
                 "original allocator");
 
-  // 无参构造没有任何开销
+  // 无参构造
   _LIBCPP_HIDE_FROM_ABI list() _NOEXCEPT_(is_nothrow_default_constructible<__node_allocator>::value) {}
   _LIBCPP_HIDE_FROM_ABI explicit list(const allocator_type& __a) : base(__a) {}
   // n个默认元素
@@ -745,6 +752,7 @@ public:
       _NOEXCEPT_(__node_alloc_traits::propagate_on_container_move_assignment::value&&
                      is_nothrow_move_assignable<__node_allocator>::value);
 
+  // initializer_list 在实际使用中高频
   _LIBCPP_HIDE_FROM_ABI list& operator=(initializer_list<value_type> __il) {
     assign(__il.begin(), __il.end());
     return *this;
@@ -993,8 +1001,7 @@ inline void list<_Tp, _Alloc>::__link_nodes_at_front(__link_pointer __f, __link_
 // Link in nodes [__f, __l] at the back of the list
 template <class _Tp, class _Alloc>
 inline void list<_Tp, _Alloc>::__link_nodes_at_back(__link_pointer __f, __link_pointer __l) {
-  // 当前的链表是 x<->end哨兵
-  // 把 <->f...l<-> 这一截挂到x后面变成x<->f...l<->end哨兵
+  // 当前链表的形态已经是一个完整的环 锚点是end这个哨兵 往链表中添加结点的本质就是新的一段不是环的链表入环
   __l->__next_          = base::__end_as_link();
   __f->__prev_          = base::__end_.__prev_;
   __f->__prev_->__next_ = __f;
