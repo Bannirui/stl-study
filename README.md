@@ -6,7 +6,7 @@ stl源码拷贝 linux平台可以把整个源码拷贝过来 但是mac平台不�
 - archlinux `cp -R /usr/include/c++/15.2.1/* ./stl/libstdcxx/`
 
 ## NOTE
-- 1 vector
+- 1 vector动态数组
   - 构造函数 
   - 析构函数
   - =
@@ -29,7 +29,7 @@ stl源码拷贝 linux平台可以把整个源码拷贝过来 但是mac平台不�
   - erase
   - push_back
   - emplace_back
-- 2 deque
+- 2 deque双端队列
   - 构造函数
     - 无参
     - deque
@@ -51,7 +51,7 @@ stl源码拷贝 linux平台可以把整个源码拷贝过来 但是mac平台不�
   - push_back
   - pop_back
   - resize
-- 3 list
+- 3 list双端链表
   - 构造
     - 无参
     - n个默认元素
@@ -60,7 +60,8 @@ stl源码拷贝 linux平台可以把整个源码拷贝过来 但是mac平台不�
   - 链表环哨兵
   - 操作符=
   - assign
-- 4 forward_list
+- 4 forward_list单链表
+  - push_front
 - 5 map
 - 6 set
 - 7 multimap
