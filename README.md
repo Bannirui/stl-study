@@ -71,6 +71,7 @@ stl源码拷贝 linux平台可以把整个源码拷贝过来 但是mac平台不�
 - 11 unordered_multimap
 - 12 unordered_multiset
 - 13 stack
+  - 内部容器是双端队列deque
 - 14 queue
 - 15 priority_queue
 - 16 basic_string
