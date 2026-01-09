@@ -18,3 +18,4 @@ add_executable(forward_list_test forward_list_test.cpp ${HDRS} ${SRCS})
 add_executable(map_test map_test.cpp ${HDRS} ${SRCS})
 # stack
 add_executable(stack_test stack_test.cpp ${HDRS} ${SRCS})
+add_executable(string_test string_test.cpp ${HDRS} ${SRCS})
