@@ -1,21 +1,10 @@
 # 源文件
 file(GLOB_RECURSE HDRS "${CMAKE_CURRENT_SOURCE_DIR}/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
-set(SRCS "${CMAKE_CURRENT_SOURCE_DIR}/x.cpp")
+file(GLOB_RECURSE SRCS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-# 动态数组
-add_executable(vector_test vector_test.cpp)
-
-# 双端队列
-add_executable(deque_test deque_test.cpp ${HDRS} ${SRCS})
-
-# 双链表
-add_executable(list_test list_test.cpp ${HDRS} ${SRCS})
-
-# 单链表
-add_executable(forward_list_test forward_list_test.cpp ${HDRS} ${SRCS})
-
-# 有序哈希表
-add_executable(map_test map_test.cpp ${HDRS} ${SRCS})
-# stack
-add_executable(stack_test stack_test.cpp ${HDRS} ${SRCS})
-add_executable(string_test string_test.cpp ${HDRS} ${SRCS})
+foreach (test_src ${SRCS})
+    # file name without extension
+    get_filename_component(test_name ${test_src} NAME_WE)
+    add_executable(${test_name} ${test_src} ${HDRS})
+    add_test(NAME ${test_name} COMMAND ${test_name})
+endforeach ()
