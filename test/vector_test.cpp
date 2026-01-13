@@ -39,6 +39,14 @@ std::ostream &operator<<(std::ostream &os, const MyTemp &v) {
 
 int main() {
     {
+        std::vector<int> v = {1, 2, 3, 4};
+        std::copy(v.begin(), v.end(), std::ostream_iterator<int>(std::cout, "\t"));
+        std::cout << std::endl;
+        std::swap(v[0], v[2]);
+        std::copy(v.begin(), v.end(), std::ostream_iterator<int>(std::cout, "\t"));
+        std::cout << std::endl;
+    }
+    {
         std::vector<MyTemp> v;
         print("emplace_back before: ", v);
         v.emplace_back(MyTemp(1, 2, "hello"));
