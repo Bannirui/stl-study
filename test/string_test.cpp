@@ -3,6 +3,14 @@
 
 int main() {
     {
+        std::string str = "hello";
+        std::string s;
+        for (auto it = str.cbegin(); it != str.cend(); ++it) {
+            s.insert(s.begin(), *it);
+        }
+        std::cout << s << std::endl;
+    }
+    {
         std::string s = "hello";
         for (int i = 0, sz = s.size(); i < sz; i++) {
             std::cout << s[i] << std::endl;
