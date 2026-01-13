@@ -3,6 +3,11 @@
 
 int main() {
     {
+        int i = 99;
+        std::string s = std::to_string(i);
+        std::cout << s << std::endl;
+    }
+    {
         std::string str = "hello";
         std::string s;
         for (auto it = str.cbegin(); it != str.cend(); ++it) {
