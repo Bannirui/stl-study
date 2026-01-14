@@ -74,9 +74,13 @@ stl源码拷贝 linux平台可以把整个源码拷贝过来 但是mac平台不�
   - 内部容器是双端队列deque
 - 14 queue
 - 15 priority_queue
+  - 构造函数 大根堆 小根堆
 - 16 basic_string
 - 17 array
 - 18 bitset
+  - 构造
+  - set
+  - reset
 - 19 span
 - 20 allocator
 - 21 pmr
