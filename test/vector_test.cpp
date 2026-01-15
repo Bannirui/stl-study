@@ -40,6 +40,21 @@ std::ostream &operator<<(std::ostream &os, const MyTemp &v) {
 int main() {
     {
         std::vector<int> v{2, 3, 1, 9};
+        std::cout << "引用 ";
+        for (auto &x: v) {
+            std::cout << x << "\t";
+        }
+        std::cout << std::endl;
+
+        std::vector<int> nums{2, 3, 1, 9};
+        std::cout << "值 ";
+        for (auto x: v) {
+            std::cout << x << "\t";
+        }
+        std::cout << std::endl;
+    }
+    {
+        std::vector<int> v{2, 3, 1, 9};
         auto x = std::ranges::max_element(v);
         std::cout << *x << std::endl;
     }
